@@ -19,7 +19,6 @@ int main() {
     }
 
     memset(&serv_addr, 0, sizeof(serv_addr));
-
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_addr.s_addr = INADDR_ANY;
     serv_addr.sin_port = 0; 
@@ -37,7 +36,7 @@ int main() {
         exit(EXIT_FAILURE);
     }
     port = ntohs(serv_addr.sin_port);
-    printf("Server started on port: %d\n", port);
+    printf("Port: %d\n", port);
 
     while (1) {
         ssize_t bytes_received = recvfrom(sockfd, buffer, BUF_SIZE, 0, (struct sockaddr *)&cli_addr, &addr_len);
@@ -55,7 +54,11 @@ int main() {
         int result = number * 2;
         snprintf(buffer, BUF_SIZE, "%d", result);
 
-        sendto(sockfd, buffer, strlen(buffer), 0, (const struct sockaddr *)&cli_addr, addr_len);
+        if (sendto(sockfd, buffer, strlen(buffer), 0, (const struct sockaddr *)&cli_addr, addr_len) < 0) {
+            perror("Sendto failed");
+            close(sockfd);
+            return EXIT_FAILURE;           
+        }
     }
 
     close(sockfd);
